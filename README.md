@@ -49,7 +49,11 @@ Broschy is a small, native macOS companion that lives around your MacBook's notc
 
 ## Get started
 
-**Published download: 0.8.3.** [Download the Apple Silicon preview](https://github.com/dalkedev/Broschy/releases/tag/v0.8.3), or build it locally with **Xcode 26 or later** and its macOS SDK. The app's deployment target is **macOS 14**; hands-on validation has been on macOS 26 and Apple Silicon. The local build produces an app for your Mac's architecture. **The screenshots show the current source redesign; the published 0.8.3 preview uses the previous design.**
+**Published download: 0.9.0.** [Download Broschy for Apple Silicon](https://github.com/dalkedev/Broschy/releases/download/v0.9.0/Broschy-0.9.0-macOS-arm64.zip) with the new design, logo and local-state recovery fixes. Requires **macOS 14 or later**; hands-on validation has been on macOS 26 and Apple Silicon. The prebuilt app does not require Xcode.
+
+Unzip the download, quit any older copy, move **Broschy.app** to **Applications**, and open it. This preview is signed ad hoc and is **not notarized by Apple**. If macOS blocks it, review [Apple's guidance for opening an app from an unidentified developer](https://support.apple.com/en-us/102445). [Release notes, installation details and SHA-256 checksum](https://github.com/dalkedev/Broschy/releases/tag/v0.9.0).
+
+To build locally, use **Xcode 26 or later** and its macOS SDK. The local build produces an app for your Mac's architecture:
 
 ```sh
 git clone https://github.com/dalkedev/Broschy.git
