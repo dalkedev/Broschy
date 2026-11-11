@@ -118,6 +118,57 @@ enum CoreTests {
         let recoveredReload = FlowStore(supportDirectory: storeDirectory, startTicker: false)
         precondition(recoveredReload.taskTitle == "Recovered" && recoveredReload.storageError == nil, "Recovery must allow future valid saves.")
         print("PASS: bounded persisted text, active session relaunch, completion persistence, corrupt-state recovery")
+
+        let unicodeDirectory = directory.appendingPathComponent("unicode-store", isDirectory: true)
+        let unicodeStore = FlowStore(supportDirectory: unicodeDirectory, startTicker: false)
+        let emojiNote = String(repeating: "👨‍👩‍👧‍👦", count: 4_000)
+        precondition(emojiNote.utf8.count > 64_000 && emojiNote.count == 4_000)
+        unicodeStore.note = emojiNote
+        unicodeStore.saveNow()
+        let unicodeReload = FlowStore(supportDirectory: unicodeDirectory, startTicker: false)
+        precondition(unicodeReload.note == emojiNote && unicodeReload.storageError == nil,
+                     "A valid 4,000-character Unicode note must not be rejected by the file-size limit after relaunch.")
+        let combinedCharacter = "a" + String(repeating: "\u{0301}", count: 100)
+        unicodeStore.note = String(repeating: combinedCharacter, count: 4_000)
+        unicodeStore.saveNow()
+        let boundedReload = FlowStore(supportDirectory: unicodeDirectory, startTicker: false)
+        precondition(!unicodeStore.note.isEmpty && unicodeStore.note.utf8.count <= 128_000
+                     && boundedReload.note == unicodeStore.note && boundedReload.storageError == nil,
+                     "Pathological multi-scalar text must remain bounded without splitting a character or corrupting the next load.")
+
+        let damagedTimerDirectory = directory.appendingPathComponent("damaged-timer", isDirectory: true)
+        try FileManager.default.createDirectory(at: damagedTimerDirectory, withIntermediateDirectories: true)
+        for damagedTimer: Any in ["unreadable", ["remainingSeconds": -1, "totalSeconds": 1_500,
+                                                  "isRunning": false, "didFinish": false]] {
+            let source = try JSONSerialization.data(withJSONObject: ["taskTitle": "Keep my task", "note": "An irreplaceable thought", "timerState": damagedTimer])
+            let stateURL = damagedTimerDirectory.appendingPathComponent("state.json")
+            try source.write(to: stateURL, options: .atomic)
+            let recoveredText = FlowStore(supportDirectory: damagedTimerDirectory, startTicker: false)
+            precondition(recoveredText.taskTitle == "Keep my task" && recoveredText.note == "An irreplaceable thought"
+                         && !recoveredText.timerState.hasStarted && recoveredText.storageError != nil,
+                         "An undecodable or invalid timer must not discard independently valid task and note fields.")
+            let untouched = try Data(contentsOf: stateURL)
+            precondition(untouched == source, "Reading damaged state must not overwrite the original file.")
+            recoveredText.saveNow()
+            let backups = try FileManager.default.contentsOfDirectory(at: damagedTimerDirectory, includingPropertiesForKeys: nil)
+                .filter { $0.lastPathComponent.hasPrefix("state-recovery-") }
+            let preserved = try backups.contains { try Data(contentsOf: $0) == source }
+            precondition(preserved, "The original damaged timer data must still be backed up before saving recovered text.")
+            let textReload = FlowStore(supportDirectory: damagedTimerDirectory, startTicker: false)
+            precondition(textReload.note == "An irreplaceable thought" && textReload.storageError == nil)
+        }
+
+        let historyDirectory = directory.appendingPathComponent("history-recovery", isDirectory: true)
+        let historyStore = FlowStore(supportDirectory: historyDirectory, startTicker: false)
+        let jobsURL = historyDirectory.appendingPathComponent("jobs", isDirectory: true)
+        try FileManager.default.removeItem(at: jobsURL)
+        historyStore.tick()
+        precondition(historyStore.storageError != nil, "Unavailable command history must be reported.")
+        historyStore.saveNow()
+        precondition(historyStore.storageError != nil, "Saving notes must not clear an outstanding command-history error.")
+        historyStore.tick()
+        precondition(historyStore.storageError == nil, "A successful history read must clear its error after access is restored.")
+        print("PASS: Unicode note relaunch, bounded scalar-heavy text, independent text recovery, history error recovery")
         #endif
         #endif
     }

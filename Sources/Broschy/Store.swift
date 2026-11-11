@@ -5,13 +5,15 @@ import Foundation
 final class FlowStore: ObservableObject {
     @Published var taskTitle: String = "" {
         didSet {
-            if taskTitle.count > 160 { taskTitle = String(taskTitle.prefix(160)) }
+            let bounded = Self.boundedText(taskTitle, characters: 160, bytes: 4_096)
+            if taskTitle != bounded { taskTitle = bounded }
             scheduleSave()
         }
     }
     @Published var note: String = "" {
         didSet {
-            if note.count > 4_000 { note = String(note.prefix(4_000)) }
+            let bounded = Self.boundedText(note, characters: 4_000, bytes: 128_000)
+            if note != bounded { note = bounded }
             scheduleSave()
         }
     }
@@ -25,6 +27,13 @@ final class FlowStore: ObservableObject {
         var timerState: FlowTimerState
     }
 
+    private struct SavedText: Decodable {
+        var taskTitle: String
+        var note: String
+    }
+
+    private enum StateReadError: Error { case invalidTimer }
+
     private let supportURL: URL
     private let jobsURL: URL
     private var ticker: Timer?
@@ -32,6 +41,8 @@ final class FlowStore: ObservableObject {
     private var isLoading = true
     private var needsStateBackup = false
     private var recoveryNotice: String?
+    private var stateError: String?
+    private var historyError: String?
 
     init(supportDirectory: URL? = nil, startTicker: Bool = true) {
         let applicationSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -43,7 +54,12 @@ final class FlowStore: ObservableObject {
             try loadState()
         } catch {
             needsStateBackup = FileManager.default.fileExists(atPath: supportURL.appendingPathComponent("state.json").path)
-            storageError = "Could not read Broschy data. Error: \((error as NSError).domain) (\((error as NSError).code))."
+            if error is StateReadError {
+                stateError = "The saved timer could not be read. Your task and note were recovered; the timer was reset."
+            } else {
+                stateError = "Could not read Broschy data. Error: \((error as NSError).domain) (\((error as NSError).code))."
+            }
+            updateStorageError()
         }
         isLoading = false
         tick()
@@ -54,6 +70,11 @@ final class FlowStore: ObservableObject {
             RunLoop.main.add(timer, forMode: .common)
             ticker = timer
         }
+    }
+
+    deinit {
+        ticker?.invalidate()
+        saveWork?.cancel()
     }
 
     func start(minutes: Int) {
@@ -102,10 +123,29 @@ final class FlowStore: ObservableObject {
             encoder.dateEncodingStrategy = .iso8601
             let data = try encoder.encode(state)
             try data.write(to: stateURL, options: .atomic)
-            storageError = recoveryNotice
+            stateError = recoveryNotice
         } catch {
-            storageError = "Could not save Broschy data. Error: \((error as NSError).domain) (\((error as NSError).code))."
+            stateError = "Could not save Broschy data. Error: \((error as NSError).domain) (\((error as NSError).code))."
         }
+        updateStorageError()
+    }
+
+    private func updateStorageError() {
+        let current = stateError ?? historyError
+        if storageError != current { storageError = current }
+    }
+
+    /// Bound both user-perceived characters and encoded size. A single character
+    /// can contain many Unicode scalars, so a character limit alone is not a file limit.
+    private static func boundedText(_ text: String, characters: Int, bytes: Int) -> String {
+        let candidate = text.prefix(characters)
+        guard candidate.utf8.count > bytes else { return String(candidate) }
+        var usedBytes = 0
+        let prefix = candidate.prefix { character in
+            usedBytes += String(character).utf8.count
+            return usedBytes <= bytes
+        }
+        return String(prefix)
     }
 
     private func scheduleSave() {
@@ -142,10 +182,17 @@ final class FlowStore: ObservableObject {
         guard FileManager.default.fileExists(atPath: stateURL.path) else { return }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        let state = try decoder.decode(SavedState.self, from: safeData(at: stateURL, maximumSize: 64_000))
-        guard state.timerState.isValid else { throw CocoaError(.fileReadCorruptFile) }
-        taskTitle = String(state.taskTitle.prefix(160))
-        note = String(state.note.prefix(4_000))
+        // The write bounds allow 4,000 multi-scalar characters (including emoji),
+        // plus JSON escaping. Never reject a state file produced by this store.
+        let data = try safeData(at: stateURL, maximumSize: 256_000)
+        let text = try decoder.decode(SavedText.self, from: data)
+        taskTitle = Self.boundedText(text.taskTitle, characters: 160, bytes: 4_096)
+        note = Self.boundedText(text.note, characters: 4_000, bytes: 128_000)
+        guard let state = try? decoder.decode(SavedState.self, from: data), state.timerState.isValid else {
+            // Recover independent text fields while the original file remains
+            // untouched until saveNow preserves it as a recovery backup.
+            throw StateReadError.invalidTimer
+        }
         timerState = state.timerState
     }
 
@@ -177,8 +224,10 @@ final class FlowStore: ObservableObject {
             }
             let newest = Array(decoded.sorted { $0.startedAt > $1.startedAt }.prefix(12))
             if jobs != newest { jobs = newest }
+            historyError = nil
         } catch {
-            storageError = "Could not read command history. Error: \((error as NSError).domain) (\((error as NSError).code))."
+            historyError = "Could not read command history. Error: \((error as NSError).domain) (\((error as NSError).code))."
         }
+        updateStorageError()
     }
 }

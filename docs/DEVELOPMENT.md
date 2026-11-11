@@ -2,9 +2,9 @@
 
 ## Build and layout
 
-Broschy uses Swift Package Manager, SwiftUI for views, and AppKit for a borderless panel aligned with the screen's safe area. The main executable is `Broschy`; `broschy-cli` writes local command-result records. The package targets macOS 14, while compiling native Liquid Glass support requires the macOS 26 SDK from Xcode 26 or later.
+Broschy uses Swift Package Manager, SwiftUI for views, and AppKit for a borderless panel aligned with the screen's safe area. The main executable is `Broschy`; `broschy-cli` writes local command-result records. The package targets macOS 14, and is validated with Xcode 26 and its macOS SDK. The panel uses opaque appearance-adaptive surfaces for predictable contrast.
 
-`StatusBarIcon.makeImage()` draws the 18-point menu bar mark as a native vector template. `isTemplate` lets macOS handle light, dark, and selected appearances; the icon has a Broschy accessibility description and tooltip.
+`StatusBarIcon.makeImage()` draws the 18-point geometric b mark as a native vector template. `isTemplate` lets macOS handle light, dark, and selected appearances; the icon has a Broschy accessibility description and tooltip.
 
 ```text
 Sources/Broschy/        App, panel, preferences, storage, Spotify, Build Watch
@@ -30,6 +30,12 @@ Broschy was previously named NotchFlow. The package, binaries, app bundle name, 
 - `~/Library/Application Support/NotchFlow/` is the existing storage folder used by both the app and CLI.
 
 Do not rename those strings mechanically. That would split existing data and system permissions. No migration or data deletion is needed for the Broschy rename. Quit the previous app before launching Broschy; both names represent the same application identity.
+
+## Local state recovery
+
+Task titles and notes are bounded by both user-perceived character count and UTF-8 size. The state read limit includes room for JSON escaping and 4,000 composed emoji, so a valid saved note is still readable after relaunch. Scalar-heavy text is truncated only at a whole-character boundary. An invalid or undecodable timer resets independently while valid task and note fields are recovered. The original state remains untouched until the next save moves it to a recovery backup.
+
+State and command-history errors are tracked independently. A successful history refresh clears its own error without hiding a state-recovery warning; saving a note does not clear an unresolved history error.
 
 ## Spotify behavior
 
@@ -85,10 +91,18 @@ The panel keeps up to ten runs per target. A 12-second compact result requires o
 
 GitHub Actions runs those checks, builds the release bundle, validates its property list, verifies the local signature, and exercises the CLI help path on a macOS 26 runner. It does not test a physical notch or connect to Spotify.
 
-Manual checks on macOS 26 / Apple Silicon have covered compact and expanded layouts, light/dark appearance in an isolated preview window, reduced motion/transparency, real Spotify metadata and artwork, and play/pause. Build Watch has also fetched live results from the public Broschy repository using the default branch. UI checks covered hiding the selected tab, last-tab protection, restoring the layout, compact music fallback, and light/dark workflow rows. The live check did not dispatch a new workflow. Next/previous and seeking have encoding checks; they have not been exercised as part of the documented live-player check. No Instruments FPS measurement or older-macOS device run is claimed.
+Earlier-release manual checks on macOS 26 / Apple Silicon covered compact and expanded layouts, light/dark appearance in an isolated preview window, reduced motion/transparency, real Spotify metadata and artwork, and play/pause. Build Watch has also fetched live results from the public Broschy repository using the default branch. UI checks covered hiding the selected tab, last-tab protection, restoring the layout, compact music fallback, and light/dark workflow rows. The live check did not dispatch a new workflow. Next/previous and seeking have encoding checks; they have not been exercised as part of the documented live-player check. No Instruments FPS measurement or older-macOS device run is claimed.
 
 Native previews with isolated preferences and mocked responses also cover the multi-repository list, independent connection errors, long names, scrolling, add/edit/remove, duplicate validation, PR branch handling, and light/dark appearance. The existing Broschy watch was verified after migration in the local app. Separate scratch lifecycle checks exercise normal and Reduce Motion opening/closing, synthetic tracking callbacks, genuine pointer exit/reentry, and deferred compact-width changes during dismissal; they use deterministic mouse positions and do not measure physical hover delivery or spring smoothness.
 
 ## Before changing panel behavior
 
 Check hover and keyboard activation, quick open/close reversals, the camera gap, text entry, pinning, Settings, hidden-tab selection, compact click destinations, and the fallback layout without a physical notch. Keep the temporarily expanded drawing canvas used during the close animation. Playback bars must stop animating when paused, hidden, or Reduce Motion is active.
+
+## Modernist UI previews
+
+The expanded content height is `PanelState.contentHeight` (380 points), shared by visible surface and animation canvas. The tab row uses an accent baseline, Focus uses an 82-point monospaced-digit timer and a 30-segment elapsed-time rule, and primary buttons use an orange fill with dark text. The camera gap and hover lifecycle are preserved. Opaque warm-ivory/graphite surfaces satisfy Reduce Transparency directly. Command + 1–5 selects visible modules in their displayed order while the panel has focus.
+
+`bash scripts/preview-ui.sh build/previews` compiles a separate native fixture executable and captures real SwiftUI/AppKit views at 2× resolution. Synthetic sessions and mocked Spotify/GitHub responses use isolated temporary data and preferences; no production AppDelegate or connections are started. `--show` opens an interactive isolated preview after capture. The screenshot entry point is excluded from the shipping build. Preview captures cover light/dark expanded modules, running Focus, empty states, settings and compact indicators, including a 24-point menu bar. They verify rendered layout, not physical notch placement, actual Spotify consent, or multi-display lifecycle.
+
+The macOS `cacheDisplay` path can render a few SF Symbols white in light captures despite correct live tint. The `--show-only --light` mode is the authoritative visual check for that appearance; committed screenshots use the accurate dark captures. `ImageRenderer` is not a replacement here because it omits AppKit-backed native controls.

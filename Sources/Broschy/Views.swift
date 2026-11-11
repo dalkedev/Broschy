@@ -4,15 +4,17 @@ import SwiftUI
 
 // OKLCH design tokens are converted to sRGB for the native renderer.
 enum Ink {
-    static let primary = adaptive(light: oklch(0.53, 0.11, 80), dark: oklch(0.83, 0.125, 80))
+    static let primary = adaptive(light: Color(red: 0.71, green: 0.23, blue: 0.07), dark: Color(red: 1, green: 0.48, blue: 0.25))
+    static let action = Color(red: 1, green: 0.40, blue: 0.19)
+    static let onAction = Color(red: 0.10, green: 0.08, blue: 0.07)
     static let background = Color.black
-    static let surface = adaptive(light: oklch(0.94, 0, 0), dark: oklch(0.23, 0, 0))
-    static let raised = adaptive(light: oklch(0.985, 0, 0), dark: oklch(0.29, 0, 0))
-    static let text = Color.primary
-    static let muted = adaptive(light: oklch(0.46, 0, 0), dark: oklch(0.86, 0, 0))
+    static let surface = adaptive(light: Color(red: 0.96, green: 0.95, blue: 0.92), dark: Color(red: 0.105, green: 0.11, blue: 0.12))
+    static let raised = adaptive(light: Color(red: 0.995, green: 0.99, blue: 0.97), dark: Color(red: 0.16, green: 0.165, blue: 0.175))
+    static let text = adaptive(light: Color(red: 0.12, green: 0.13, blue: 0.14), dark: Color(red: 0.96, green: 0.95, blue: 0.92))
+    static let muted = adaptive(light: Color(red: 0.37, green: 0.37, blue: 0.36), dark: Color(red: 0.68, green: 0.68, blue: 0.66))
     static let success = adaptive(light: oklch(0.46, 0.12, 155), dark: oklch(0.82, 0.15, 155))
     static let failure = adaptive(light: oklch(0.52, 0.16, 25), dark: oklch(0.78, 0.14, 25))
-    static let selection = adaptive(light: .white.opacity(0.65), dark: .white.opacity(0.12))
+    static let selection = adaptive(light: .black.opacity(0.075), dark: .white.opacity(0.10))
     static let inset = adaptive(light: .black.opacity(0.035), dark: .white.opacity(0.035))
     static let separator = adaptive(light: .black.opacity(0.08), dark: .white.opacity(0.10))
     static let keycap = adaptive(light: .black.opacity(0.045), dark: .white.opacity(0.07))
@@ -48,7 +50,7 @@ struct NotchRootView: View {
             VStack(spacing: 0) {
                 expandedHeader
                 ExpandedContent(store: store, state: state, spotify: spotify, agents: agents, preferences: preferences, builds: builds)
-                    .frame(height: 350)
+                    .frame(height: PanelState.contentHeight)
                 .opacity(state.expanded ? 1 : 0)
                 .offset(y: state.expanded || state.reduceMotion ? 0 : -12)
             }
@@ -64,10 +66,9 @@ struct NotchRootView: View {
         }
         .frame(width: state.surfaceWidth, height: state.surfaceHeight, alignment: .top)
         .clipShape(NotchShape(cornerRadius: surfaceRadius))
-        .background(PanelMaterial(reduceTransparency: state.reduceTransparency)
+        .background(PanelMaterial()
             .clipShape(NotchShape(cornerRadius: surfaceRadius)).allowsHitTesting(false))
-        .modifier(PanelGlass(reduceTransparency: state.reduceTransparency,
-                            radius: surfaceRadius))
+        .modifier(PanelOutline(radius: surfaceRadius))
         .overlay(alignment: .top) {
             UnevenRoundedRectangle(bottomLeadingRadius: 9, bottomTrailingRadius: 9)
                 .fill(.black)
@@ -85,7 +86,7 @@ struct NotchRootView: View {
         .transaction { if state.reduceMotion { $0.disablesAnimations = true } }
     }
 
-    var surfaceRadius: CGFloat { state.expanded ? 26 : state.previewing ? 16 : 14 }
+    var surfaceRadius: CGFloat { state.expanded ? 20 : state.previewing ? 14 : 12 }
 
     var expandedHeader: some View {
         HStack(spacing: 0) {
@@ -98,7 +99,7 @@ struct NotchRootView: View {
                     Image(systemName: "circle.hexagongrid.fill").foregroundStyle(Ink.text.opacity(0.88))
                         .accessibilityHidden(true)
                 }
-                Text("Broschy").font(.system(size: 11, weight: .semibold, design: .rounded))
+                Text("Broschy").font(.system(size: 12, weight: .bold)).tracking(-0.3)
             }
             .frame(maxWidth: .infinity)
             Color.clear.frame(width: state.notchWidth)
@@ -274,15 +275,16 @@ struct ExpandedContent: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 3) {
-                ForEach(preferences.orderedVisibleTabs) { item in
+            HStack(spacing: 0) {
+                ForEach(Array(preferences.orderedVisibleTabs.enumerated()), id: \.element.id) { position, item in
                     tab(item.displayTitle, symbol: item.systemSymbol, index: item.rawValue)
+                        .keyboardShortcut(KeyEquivalent(Character(String(position + 1))), modifiers: .command)
+                        .help("\(item.displayTitle) · ⌘\(position + 1)")
                 }
             }
-            .padding(4)
-            .modifier(ControlSurface(radius: 14))
-            .padding(.top, 12)
-            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .overlay(alignment: .bottom) { Rectangle().fill(Ink.separator).frame(height: 1) }
+            .padding(.horizontal, 24)
             Group {
                 switch state.tab {
                 case 1: SignalsHubView(store: store, state: state, builds: builds)
@@ -304,7 +306,8 @@ struct ExpandedContent: View {
                         .foregroundStyle(Ink.failure)
                         .help(store.storageError ?? "")
                 } else {
-                    Image(systemName: "lock.shield").font(.system(size: 9))
+                    Image(systemName: "lock.shield").renderingMode(.template)
+                        .foregroundStyle(Ink.muted).font(.system(size: 9))
                     Text(state.tab == 3 ? "Spotify on this Mac" : state.tab == 4 ? "Local events · last 24 hours" : state.tab == 1 && state.signalPage == 0 ? "GitHub Actions · read only" : "Stored locally")
                 }
                 Spacer()
@@ -316,7 +319,8 @@ struct ExpandedContent: View {
             .font(.system(size: 10))
             .foregroundStyle(Ink.muted)
             .padding(.horizontal, 24)
-            .padding(.bottom, 16)
+            .padding(.vertical, 12)
+            .background(Ink.inset)
         }
     }
 
@@ -325,17 +329,19 @@ struct ExpandedContent: View {
             withAnimation(reduceMotion ? nil : FlowMotion.selection) { state.tab = index }
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: symbol).font(.system(size: 10))
-                Text(title).font(.system(size: 11, weight: .medium)).lineLimit(1)
+                Image(systemName: symbol).renderingMode(.template)
+                    .foregroundStyle(state.tab == index ? Ink.text : Ink.muted)
+                    .font(.system(size: 10))
+                Text(title).font(.system(size: 11, weight: state.tab == index ? .semibold : .medium)).lineLimit(1)
                 if (index == 1 && (builds.activeCount > 0 || store.jobs.contains(where: { $0.status == .running }))) || (index == 4 && agents.needsYouCount > 0) {
                     Circle().fill(Ink.primary).frame(width: 4, height: 4)
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 9)
-            .background {
+            .padding(.vertical, 13)
+            .overlay(alignment: .bottom) {
                 if state.tab == index {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Ink.selection)
+                    Rectangle().fill(Ink.primary).frame(height: 2)
                         .matchedGeometryEffect(id: "active-tab", in: tabSelection)
                 }
             }
@@ -344,6 +350,7 @@ struct ExpandedContent: View {
         }
         .buttonStyle(QuietButtonStyle())
         .accessibilityAddTraits(state.tab == index ? .isSelected : [])
+        .help("Open \(title)")
     }
 
     func keycap(_ value: String) -> some View {
@@ -362,25 +369,25 @@ struct FocusView: View {
     @Environment(\.flowReduceMotion) var reduceMotion
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             TextField("", text: $store.taskTitle, prompt: Text("What are you working on?").foregroundStyle(Ink.muted))
                 .textFieldStyle(.plain)
-                .font(.system(size: 15, weight: .medium))
+                .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(Ink.text)
                 .tint(Ink.primary)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
                 .focused($editing)
                 .onSubmit { editing = false }
                 .accessibilityLabel("Current task")
-                .padding(.top, 19)
+                .padding(.top, 21)
             Text(time)
-                .font(.system(size: 64, weight: .light, design: .rounded))
+                .font(.system(size: 82, weight: .medium))
                 .monospacedDigit()
-                .tracking(-1.5)
+                .tracking(-3)
                 .foregroundStyle(store.timerState.didFinish ? Ink.success : Ink.text)
                 .contentTransition(.numericText(countsDown: true))
                 .animation(reduceMotion ? nil : .easeOut(duration: 0.24), value: time)
-                .padding(.top, 8)
+                .padding(.top, 5)
                 .accessibilityLabel("Time remaining \(time)")
             HStack(spacing: 5) {
                 if active || store.timerState.didFinish {
@@ -389,31 +396,29 @@ struct FocusView: View {
                         .foregroundStyle(store.timerState.didFinish ? Ink.success : Ink.primary)
                         .contentTransition(.symbolEffect(.replace))
                 }
-                Text(subtitle).font(.system(size: 11)).foregroundStyle(Ink.muted)
+                Text(subtitle).font(.system(size: 12)).foregroundStyle(Ink.muted)
             }
             .padding(.top, 2)
             .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: subtitle)
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Ink.separator)
-                    Capsule().fill(store.timerState.didFinish ? Ink.success : Ink.primary)
-                        .frame(width: max(0, proxy.size.width * progress))
-                        .animation(reduceMotion ? nil : .linear(duration: 0.8), value: progress)
+            HStack(spacing: 3) {
+                ForEach(0..<30, id: \.self) { index in
+                    Rectangle()
+                        .fill(Double(index) < progress * 30 ? (store.timerState.didFinish ? Ink.success : Ink.primary) : Ink.separator)
+                        .frame(maxWidth: .infinity)
                 }
             }
-            .frame(height: 2)
-            .padding(.horizontal, 48)
-            .padding(.top, 13)
+            .frame(height: 4)
+            .padding(.top, 17)
             .accessibilityHidden(true)
-            HStack(spacing: 3) {
+            HStack(spacing: 4) {
                 ForEach([25, 50, 90], id: \.self) { value in
                     Button { withAnimation(reduceMotion ? nil : FlowMotion.selection) { state.selectedMinutes = value } } label: {
                         Text("\(value) min")
                             .font(.system(size: 11, weight: .medium))
-                            .padding(.horizontal, 17).padding(.vertical, 6)
+                            .padding(.horizontal, 15).padding(.vertical, 8)
                             .background {
                                 if state.selectedMinutes == value {
-                                    Capsule().fill(Ink.selection)
+                                    RoundedRectangle(cornerRadius: 6).fill(Ink.selection)
                                         .matchedGeometryEffect(id: "duration", in: durationSelection)
                                 }
                             }
@@ -424,9 +429,7 @@ struct FocusView: View {
                     .accessibilityAddTraits(state.selectedMinutes == value ? .isSelected : [])
                 }
             }
-            .padding(3)
-            .background(Ink.inset, in: Capsule())
-            .padding(.top, 12)
+            .padding(.top, 14)
             HStack(spacing: 10) {
                 Button {
                     editing = false
@@ -437,19 +440,19 @@ struct FocusView: View {
                     Label(buttonTitle, systemImage: store.timerState.isRunning ? "pause.fill" : "play.fill")
                         .font(.system(size: 13, weight: .semibold))
                         .contentTransition(.symbolEffect(.replace))
-                        .frame(maxWidth: .infinity).frame(height: 38)
+                        .frame(maxWidth: .infinity).frame(height: 42)
                 }
                 .buttonStyle(FlowButtonStyle(primary: true))
                 if active || store.timerState.didFinish {
                     Button { withAnimation(reduceMotion ? nil : FlowMotion.selection) { store.resetTimer() } } label: {
-                        Image(systemName: "arrow.counterclockwise").frame(width: 38, height: 38)
+                        Image(systemName: "arrow.counterclockwise").frame(width: 42, height: 42)
                     }
                     .buttonStyle(FlowButtonStyle(primary: false))
                     .transition(.opacity.combined(with: .scale(scale: reduceMotion ? 1 : 0.88)))
                     .help("Reset timer").accessibilityLabel("Reset timer")
                 }
             }
-            .padding(.top, 14)
+            .padding(.top, 12)
             Spacer(minLength: 8)
         }
     }
@@ -568,7 +571,7 @@ struct LaterView: View {
     @Environment(\.flowReduceMotion) var reduceMotion
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Capture it. Stay focused.").font(.system(size: 15, weight: .semibold))
+            Text("A thought for later.").font(.system(size: 20, weight: .semibold)).tracking(-0.4)
             Text("An idea, a link, or your next step.")
                 .font(.system(size: 11)).foregroundStyle(Ink.muted)
             ZStack(alignment: .topLeading) {
@@ -591,8 +594,8 @@ struct LaterView: View {
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(Ink.text.opacity(editing ? 0.28 : 0.12), lineWidth: 1))
             .animation(reduceMotion ? nil : FlowMotion.feedback, value: editing)
-            Text("Saves automatically · \(store.note.count)/4000")
-                .font(.system(size: 10)).foregroundStyle(Ink.muted)
+            Text(store.storageError == nil ? "Saves automatically · \(store.note.count)/4000" : "Storage needs attention · \(store.note.count)/4000")
+                .font(.system(size: 10)).foregroundStyle(store.storageError == nil ? Ink.muted : Ink.failure)
         }
         .padding(.top, 20).padding(.bottom, 14)
     }

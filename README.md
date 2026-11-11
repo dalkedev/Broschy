@@ -8,7 +8,7 @@
 Agents, focus, music, builds, and quick notes — one glance away.</p>
 
 <p align="center">
-  <a href="https://github.com/SculptTechProject/Broschy/actions/workflows/ci.yml"><img src="https://github.com/SculptTechProject/Broschy/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
+  <a href="https://github.com/dalkedev/Broschy/actions/workflows/ci.yml"><img src="https://github.com/dalkedev/Broschy/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-24292f?logo=apple&logoColor=white" alt="macOS 14 or later">
   <img src="https://img.shields.io/badge/Swift-native-F05138?logo=swift&logoColor=white" alt="Native Swift app">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5eaaa1" alt="MIT license"></a>
@@ -16,17 +16,17 @@ Agents, focus, music, builds, and quick notes — one glance away.</p>
 
 <p align="center"><a href="#get-started">Get started</a> · <a href="#agents">Agents</a> · <a href="#spotify">Spotify</a> · <a href="#build-watch">Build Watch</a> · <a href="#settings">Settings</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
 
-Broschy is a small, native macOS companion that lives around your MacBook's notch. Hover to open it, take care of something, and get back to your work. A translucent compact strip keeps the essentials visible without opening a full window.
+Broschy is a small, native macOS companion that lives around your MacBook's notch. Hover to open it, take care of something, and get back to your work. A compact strip keeps the essentials visible without opening a full window.
 
 <table>
   <tr>
-    <td><img src="docs/assets/focus-light.png" alt="Broschy Focus in Light appearance, with a 25-minute timer" width="480"></td>
+    <td><img src="docs/assets/focus-dark.png" alt="Broschy Focus in Dark appearance, with a 25-minute timer" width="480"></td>
     <td><img src="docs/assets/music-dark.png" alt="Broschy Music in Dark appearance, with sample track and playback controls" width="480"></td>
   </tr>
   <tr><td align="center">A moment to focus.</td><td align="center">Your music, within reach.</td></tr>
 </table>
 
-<p align="center"><sub>Actual app views with sample data. Glass adapts to your appearance and the content behind it.</sub></p>
+<p align="center"><sub>Actual native app views with sample data. Warm ivory and graphite appearances follow macOS.</sub></p>
 
 ## Five things, close at hand
 
@@ -40,7 +40,7 @@ Broschy is a small, native macOS companion that lives around your MacBook's notc
 
 ### Made for the edge of your screen
 
-- **Liquid Glass, expanded and compact.** Native glass on macOS 26, with a standard macOS material on earlier versions.
+- **Modernist, expanded and compact.** Warm ivory and graphite surfaces, clear typography, an orange primary action, and a measured focus progress strip. Opaque surfaces stay readable over any desktop.
 - **Light and Dark, automatically.** Text, accents, and surfaces follow the system appearance, including Auto.
 - **Motion with a purpose.** The resting strip fits inside the menu bar. Hover gives it a small preview before opening; restrained springs soften opening and closing. Reduce Motion and Reduce Transparency are respected.
 - **Your layout.** Choose which tabs appear, including which modules can use the compact notch.
@@ -49,10 +49,10 @@ Broschy is a small, native macOS companion that lives around your MacBook's notc
 
 ## Get started
 
-**Current version: 0.8.3.** [Download the Apple Silicon preview](https://github.com/SculptTechProject/Broschy/releases/tag/v0.8.3), or build it locally with **Xcode 26 or later** and its macOS SDK. The app's deployment target is **macOS 14**; hands-on validation has been on macOS 26 and Apple Silicon. The local build produces an app for your Mac's architecture.
+**Published download: 0.8.3.** [Download the Apple Silicon preview](https://github.com/dalkedev/Broschy/releases/tag/v0.8.3), or build it locally with **Xcode 26 or later** and its macOS SDK. The app's deployment target is **macOS 14**; hands-on validation has been on macOS 26 and Apple Silicon. The local build produces an app for your Mac's architecture. **The screenshots show the current source redesign; the published 0.8.3 preview uses the previous design.**
 
 ```sh
-git clone https://github.com/SculptTechProject/Broschy.git
+git clone https://github.com/dalkedev/Broschy.git
 cd Broschy
 bash build.sh
 open build/Broschy.app
@@ -67,11 +67,12 @@ The build script assembles `build/Broschy.app` and signs it locally with an ad h
 | Open the panel | Hover over the notch or click the compact strip |
 | Toggle the panel | **Control + Option + N**, or the menu bar icon |
 | Keep it open | Click the pin |
+| Switch modules | **Command + 1–5**, in the order of visible tabs, while the panel has focus |
 | Settings | The header gear, **Settings…** in the menu bar menu, or **Command + ,** |
 | Hide it | **Esc** or the chevron in the panel |
 | Quit Broschy | **⋯ → Quit Broschy**, the menu bar menu, or **Command + Q** while the panel has focus |
 
-Look for Broschy's notched-screen icon in the menu bar. It is a native monochrome template that adapts to light and dark menu bars.
+Look for Broschy's geometric **b** icon in the menu bar. It is a native monochrome template that adapts to light and dark menu bars.
 
 Hiding the panel keeps Broschy running. To reopen it after quitting, launch `Broschy.app`. Broschy has no Dock icon and does not automatically start at login. On a screen without a notch, it appears at the center of the top edge.
 
@@ -146,7 +147,7 @@ Commands shows work run through Broschy’s CLI and results you explicitly send.
 
 The task, timer, note, and command history are stored locally. Broschy has no account, analytics, or cloud sync. Agent snapshots contain session and project identifiers, status, generic activity labels, and timestamps; prompts and tool contents are not saved. Integration setup retains local configuration backups. Command records contain a label, working directory, status, timestamps, and an exit code when available; command arguments and output are not saved. Album artwork is fetched over HTTPS from URLs returned by Spotify. No listening history or Spotify tokens are stored.
 
-Build Watch is opt-in and contacts GitHub.com through `gh`, using the credentials GitHub CLI already manages. Broschy does not request, extract, or save GitHub tokens. The watchlist, per-target enabled state, and a bounded set of completion identifiers for each target are saved in local preferences; fetched workflow metadata stays in memory. Full CI logs are not downloaded or stored. Layout and Quiet Focus preferences are also stored locally.
+Build Watch is opt-in and contacts GitHub.com through `gh`, using the credentials GitHub CLI already manages. Broschy does not request, extract, or save GitHub tokens. The watchlist, per-target enabled state, and a bounded set of completion identifiers for each target are saved in local preferences; fetched workflow metadata stays in memory. Full CI logs are not downloaded or stored. Layout and Quiet Focus preferences are also stored locally. If only the saved timer is damaged, Broschy recovers the task and note, resets the timer, and preserves the original file in a recovery backup before the next save.
 
 For compatibility with earlier installations, the storage folder remains:
 
@@ -164,6 +165,8 @@ Use **Open Broschy Data** from the menu bar to find it. The legacy bundle identi
 ```sh
 bash test.sh   # Isolated core, agents, preferences, priority, and mocked integration checks
 bash build.sh  # Release app bundle, icon, and local signature
+bash scripts/preview-ui.sh build/previews  # Isolated native screenshots with sample data
+bash scripts/build-icon.sh  # Regenerate ICNS from Resources/AppIcon.png
 ```
 
 Tests use isolated data and mocked Spotify and Build Watch responses. They cover saved layout preferences, Quiet Focus, and compact priority without controlling your player or changing GitHub workflows. UI appearance, physical notch placement, and macOS Automation prompts still need manual checks. See [development notes](docs/DEVELOPMENT.md), [design notes](DESIGN.md), and [contributing](CONTRIBUTING.md).

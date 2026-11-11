@@ -6,7 +6,7 @@ struct PanelSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Make it yours.").font(.system(size: 19, weight: .semibold, design: .rounded))
+                Text("Make it yours.").font(.system(size: 21, weight: .semibold)).tracking(-0.5)
                 Spacer()
                 Image(systemName: "slider.horizontal.3").foregroundStyle(Ink.muted)
             }
@@ -21,7 +21,7 @@ struct PanelSettingsView: View {
             }
             Rectangle().fill(Ink.separator).frame(height: 1)
             VStack(alignment: .leading, spacing: 10) {
-                Text("IN YOUR PANEL").font(.system(size: 9, weight: .semibold)).tracking(1).foregroundStyle(Ink.muted)
+                Text("Visible tabs").font(.system(size: 12, weight: .semibold)).foregroundStyle(Ink.text)
                 ForEach(PanelTab.displayOrder) { tab in
                     Toggle(isOn: Binding(get: { preferences.visibleTabs.contains(tab) },
                                          set: { preferences.setVisible($0, for: tab) })) {

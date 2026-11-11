@@ -34,24 +34,19 @@ extension AgentStatus {
     }
 }
 
-private extension AgentProvider {
-    var monogram: String {
-        switch self {
-        case .codex: return "C"
-        case .claude: return "✳︎"
-        case .opencode: return "o"
-        }
-    }
-}
-
 struct AgentMark: View {
     let provider: AgentProvider
     var body: some View {
-        Text(provider.monogram)
-            .font(.system(size: provider == .claude ? 22 : 16, weight: .semibold, design: .rounded))
+        Group {
+            switch provider {
+            case .codex: Text("C")
+            case .claude: Image(systemName: "asterisk")
+            case .opencode: Text("o")
+            }
+        }
+            .font(.system(size: 16, weight: .semibold))
             .frame(width: 34, height: 34)
-            .background(Ink.selection, in: RoundedRectangle(cornerRadius: 11))
-            .overlay(RoundedRectangle(cornerRadius: 11).strokeBorder(Ink.separator, lineWidth: 0.5))
+            .background(Ink.selection, in: RoundedRectangle(cornerRadius: 8))
             .accessibilityHidden(true)
     }
 }
@@ -130,16 +125,14 @@ struct AgentsView: View {
 
     private var emptyState: some View {
         VStack(spacing: 10) {
-            HStack(spacing: -5) {
+            HStack(spacing: 8) {
                 ForEach(AgentProvider.allCases, id: \.self) { provider in
                     AgentMark(provider: provider)
-                        .rotationEffect(.degrees(provider == .codex ? -10 : provider == .opencode ? 10 : 0))
-                        .offset(y: provider == .claude ? -6 : 0)
                 }
             }
             .padding(.bottom, 3)
             Text(hasConnections ? "Waiting for your agents." : "Your agents, in view.")
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .font(.system(size: 20, weight: .semibold)).tracking(-0.4)
             Text(hasConnections ? "Start a new session in a connected tool.\nYour activity will appear here." : "See who’s working, waiting for you,\nand ready for a review.")
                 .font(.system(size: 12)).foregroundStyle(Ink.muted)
                 .multilineTextAlignment(.center).lineSpacing(3)
