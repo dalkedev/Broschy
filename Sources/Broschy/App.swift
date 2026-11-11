@@ -9,6 +9,7 @@ final class PanelState: ObservableObject {
     static let closeDuration: TimeInterval = 0.36
     static let previewDuration: TimeInterval = 0.14
     static let hoverDelay: TimeInterval = 0.22
+    static let contentHeight: CGFloat = 380
 
     @Published var expanded = false
     @Published var canvasExpanded = false
@@ -33,9 +34,9 @@ final class PanelState: ObservableObject {
     var previewWidth: CGFloat { PanelGeometry.previewWidth(compactWidth: compactWidth, panelWidth: panelWidth) }
     var compactHeight: CGFloat { menuBarHeight + (previewing ? PanelGeometry.previewHeightGrowth : 0) }
     var surfaceWidth: CGFloat { expanded ? panelWidth : previewing ? previewWidth : compactWidth }
-    var surfaceHeight: CGFloat { expanded ? notchHeight + 350 : compactHeight }
+    var surfaceHeight: CGFloat { expanded ? notchHeight + Self.contentHeight : compactHeight }
     var canvasWidth: CGFloat { canvasExpanded ? panelWidth + PanelGeometry.animationPadding * 2 : canvasPreview ? previewWidth : compactWidth }
-    var canvasHeight: CGFloat { canvasExpanded ? notchHeight + 350 + PanelGeometry.animationPadding : menuBarHeight + (canvasPreview ? PanelGeometry.previewHeightGrowth : 0) }
+    var canvasHeight: CGFloat { canvasExpanded ? notchHeight + Self.contentHeight + PanelGeometry.animationPadding : menuBarHeight + (canvasPreview ? PanelGeometry.previewHeightGrowth : 0) }
     @Published var shortcutAvailable = false
     @Published var selectedMinutes = 25
     var open: (() -> Void)?
@@ -540,6 +541,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+#if !BROSCHY_UI_PREVIEW
 @main
 struct BroschyMain {
     @MainActor static func main() {
@@ -549,3 +551,4 @@ struct BroschyMain {
         withExtendedLifetime(delegate) { application.run() }
     }
 }
+#endif

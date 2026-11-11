@@ -43,57 +43,26 @@ struct NotchShape: Shape {
     }
 }
 
-/// Compatibility backdrop for macOS versions before Liquid Glass.
-struct NativeBackdrop: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = .popover
-        view.blendingMode = .behindWindow
-        view.state = .active
-        return view
-    }
-    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
-}
-
 struct PanelMaterial: View {
-    let reduceTransparency: Bool
     var body: some View {
-        if reduceTransparency {
-            Ink.surface
-        } else if #available(macOS 26.0, *) {
-            Color.clear
-        } else {
-            NativeBackdrop()
-        }
+        // A solid surface keeps text stable over both bright and dark desktops.
+        // It also satisfies Reduce Transparency without a second visual system.
+        Ink.surface
     }
 }
 
-struct PanelGlass: ViewModifier {
-    let reduceTransparency: Bool
+struct PanelOutline: ViewModifier {
     let radius: CGFloat
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content.glassEffect(!reduceTransparency ? .regular : .identity,
-                                in: NotchShape(cornerRadius: radius))
-        } else {
-            content
-        }
+        content.overlay(NotchShape(cornerRadius: radius).stroke(Ink.separator, lineWidth: 0.5).allowsHitTesting(false))
     }
 }
 
-/// Interior controls sit on the single glass panel instead of stacking glass.
+/// Interior controls share the panel's flat, opaque surface vocabulary.
 struct ControlSurface: ViewModifier {
-    var radius: CGFloat = 12
-    @Environment(\.flowReduceTransparency) var reduceTransparency
-    @Environment(\.colorScheme) var colorScheme
+    var radius: CGFloat = 8
     @ViewBuilder func body(content: Content) -> some View {
-        if reduceTransparency {
-            content.background(Ink.raised, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).strokeBorder(Color.primary.opacity(0.10), lineWidth: 0.5))
-        } else {
-            content.background(Color.white.opacity(colorScheme == .dark ? 0.06 : 0.35), in: RoundedRectangle(cornerRadius: radius, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).strokeBorder(Color.white.opacity(colorScheme == .dark ? 0.10 : 0.55), lineWidth: 0.5))
-        }
+        content.background(Ink.raised, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
     }
 }
 
@@ -111,18 +80,16 @@ private struct FlowButtonSurface<Label: View>: View {
     @State private var hovered = false
     @Environment(\.isEnabled) var enabled
     @Environment(\.flowReduceMotion) var reduceMotion
-    @Environment(\.colorScheme) var colorScheme
     var body: some View {
         label
-            .foregroundStyle(Ink.text)
-            .background(Color.white.opacity(primary ? (colorScheme == .dark ? 0.04 : 0.20) : 0), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .modifier(ControlSurface(radius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.white.opacity(hovered && enabled ? (colorScheme == .dark ? 0.06 : 0.18) : 0)).allowsHitTesting(false))
-            .scaleEffect(reduceMotion ? 1 : (pressed ? 0.975 : (hovered && enabled ? 1.008 : 1)))
+            .foregroundStyle(primary ? Ink.onAction : Ink.text)
+            .background(primary ? Ink.action : Ink.selection, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(hovered && enabled ? 0.10 : 0)).allowsHitTesting(false))
+            .scaleEffect(reduceMotion ? 1 : (pressed ? 0.98 : 1))
             .opacity(enabled ? 1 : 0.48)
             .animation(reduceMotion ? nil : FlowMotion.feedback, value: pressed)
             .animation(reduceMotion ? nil : FlowMotion.feedback, value: hovered)
-            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .onHover { hovered = $0 }
     }
 }

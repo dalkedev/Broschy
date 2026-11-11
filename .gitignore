@@ -11,3 +11,5 @@ xcuserdata/
 *.mobileprovision
 __pycache__/
 *.py[cod]
+.impeccable/questions/
+.impeccable/review/

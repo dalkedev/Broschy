@@ -17,12 +17,13 @@ struct MusicView: View {
     }
 
     private func player(_ track: SpotifySnapshot) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 18) {
             HStack(spacing: 13) {
                 artwork(track.artworkURL)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(track.title.isEmpty ? "Nothing playing yet" : track.title)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 19, weight: .semibold))
+                        .tracking(-0.4)
                         .lineLimit(2)
                         .help(track.title)
                     Text(track.artist.isEmpty ? "Choose a track in Spotify" : track.artist)
@@ -97,8 +98,8 @@ struct MusicView: View {
                 }
             }
         }
-        .frame(width: 64, height: 64)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .frame(width: 72, height: 72)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityHidden(true)
     }
 
@@ -120,7 +121,7 @@ struct MusicView: View {
                 .foregroundStyle(Ink.muted)
                 .frame(height: 40)
             Text(connectionTitle)
-                .font(.system(size: 19, weight: .semibold, design: .rounded))
+                .font(.system(size: 20, weight: .semibold))
             Text(connectionMessage)
                 .font(.system(size: 12))
                 .foregroundStyle(Ink.muted)

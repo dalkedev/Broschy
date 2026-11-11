@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-11T15:18:13Z",
+  "title": "Design System: Broschy",
+  "extensions": {
+    "colorMeta": {
+      "primary-light": {
+        "role": "primary",
+        "displayName": "Burnt orange accent"
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Warm orange accent"
+      },
+      "action": {
+        "role": "primary",
+        "displayName": "Action orange"
+      },
+      "surface-light": {
+        "role": "neutral",
+        "displayName": "Warm ivory"
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Graphite"
+      }
+    },
+    "typographyMeta": {
+      "timer": {
+        "displayName": "Tabular countdown",
+        "purpose": "Large native Focus digits; tabular numerals, medium SF system face."
+      },
+      "task": {
+        "displayName": "Editable task",
+        "purpose": "Direct text entry above the remaining time."
+      },
+      "metadata": {
+        "displayName": "Context and status",
+        "purpose": "Footer, timestamps, storage and playback context."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "selection",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1), 260ms",
+        "purpose": "Matched native tab and duration selection."
+      },
+      {
+        "name": "feedback",
+        "value": "ease-out, 140ms",
+        "purpose": "Hover and press feedback; Reduce Motion removes scale changes."
+      },
+      {
+        "name": "hover-intent",
+        "value": "220ms",
+        "purpose": "Passive pointer intent delay, retained with Reduce Motion."
+      },
+      {
+        "name": "preview",
+        "value": "ease-out, 140ms",
+        "purpose": "Up to 12pt width and 4pt height growth before opening."
+      },
+      {
+        "name": "open",
+        "value": "SwiftUI spring(response: 0.34, dampingFraction: 0.88, blendDuration: 0.08)",
+        "purpose": "Native panel opening; 360ms transition canvas lifecycle."
+      },
+      {
+        "name": "close",
+        "value": "SwiftUI spring(response: 0.26, dampingFraction: 0.88, blendDuration: 0.08)",
+        "purpose": "Native panel closing; retain canvas for 360ms."
+      },
+      {
+        "name": "numeric",
+        "value": "ease-out, 240ms",
+        "purpose": "Countdown digit transition."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-secondary-text",
+        "value": "28pt"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Browser documentation equivalent of FlowButtonStyle(primary: true); native SwiftUI is authoritative. CSS pixels illustrate native point sizes.",
+      "html": "<button class=\"ds-button ds-primary\">Start focus</button>",
+      "css": ".ds-button{border:0;border-radius:8px;height:42px;padding:0 24px;font:600 13px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;transition:filter 140ms ease-out,transform 140ms ease-out}.ds-button:hover{filter:brightness(1.08)}.ds-button:active{transform:scale(.98)}.ds-button:focus-visible{outline:2px solid rgb(71% 23% 7%);outline-offset:3px}.ds-button:disabled{opacity:.48;cursor:default}@media(prefers-reduced-motion:reduce){.ds-button{transition:none}.ds-button:active{transform:none}}.ds-primary{background:rgb(100% 40% 19%);color:rgb(10% 8% 7%)}"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary-light",
+      "description": "Light-appearance equivalent of the flat secondary native control.",
+      "html": "<button class=\"ds-button ds-secondary\">Reset</button>",
+      "css": ".ds-button{border:0;border-radius:8px;height:42px;padding:0 24px;font:600 13px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;transition:filter 140ms ease-out,transform 140ms ease-out}.ds-button:hover{filter:brightness(1.08)}.ds-button:active{transform:scale(.98)}.ds-button:focus-visible{outline:2px solid rgb(71% 23% 7%);outline-offset:3px}.ds-button:disabled{opacity:.48;cursor:default}@media(prefers-reduced-motion:reduce){.ds-button{transition:none}.ds-button:active{transform:none}}.ds-secondary{background:rgb(0 0 0 / .075);color:rgb(12% 13% 14%)}"
+    },
+    {
+      "name": "Current task",
+      "kind": "input",
+      "description": "The plain native Focus task field; orange caret and direct text editing.",
+      "html": "<input class=\"ds-task\" aria-label=\"Current task\" placeholder=\"What are you working on?\">",
+      "css": ".ds-task{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:17px;font-weight:500;background:rgb(96% 95% 92%);color:rgb(12% 13% 14%);caret-color:rgb(71% 23% 7%);border:0;padding:8px}.ds-task::placeholder{color:rgb(37% 37% 36%)}.ds-task:focus-visible{outline:2px solid rgb(71% 23% 7%);outline-offset:2px}"
+    },
+    {
+      "name": "Visible tab navigation",
+      "kind": "nav",
+      "description": "Documentation layout of five native tabs. SwiftUI supplies SF Symbols, selected traits and Command-number shortcuts by visible position.",
+      "html": "<nav class=\"ds-tabs\" aria-label=\"Broschy modules\"><button>Agents</button><button aria-current=\"page\">Focus</button><button>Music</button><button>Signals</button><button>Later</button></nav>",
+      "css": ".ds-tabs{display:flex;border-bottom:1px solid rgb(0 0 0 / .08);background:rgb(96% 95% 92%)}.ds-tabs button{flex:1;border:0;border-bottom:2px solid transparent;padding:13px 10px;background:transparent;color:rgb(37% 37% 36%);font:500 11px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}.ds-tabs button[aria-current]{border-bottom-color:rgb(71% 23% 7%);color:rgb(12% 13% 14%);font-weight:600}.ds-tabs button:hover{background:rgb(0 0 0 / .035)}.ds-tabs button:focus-visible{outline:2px solid rgb(71% 23% 7%);outline-offset:-2px}"
+    },
+    {
+      "name": "Session duration",
+      "kind": "chip",
+      "refersTo": "duration",
+      "description": "25, 50 and 90 minute native choices. Selected choice receives a flat fill; choices disable during an active session.",
+      "html": "<div class=\"ds-durations\"><button aria-pressed=\"true\">25 min</button><button aria-pressed=\"false\">50 min</button><button aria-pressed=\"false\">90 min</button></div>",
+      "css": ".ds-durations{display:flex;gap:4px;background:rgb(96% 95% 92%)}.ds-durations button{border:0;border-radius:6px;padding:8px 15px;font:500 11px -apple-system,BlinkMacSystemFont,sans-serif;color:rgb(37% 37% 36%);background:transparent;cursor:pointer}.ds-durations button[aria-pressed=true]{background:rgb(0 0 0 / .075);color:rgb(12% 13% 14%)}.ds-durations button:hover{background:rgb(0 0 0 / .10)}.ds-durations button:focus-visible{outline:2px solid rgb(71% 23% 7%);outline-offset:2px}.ds-durations button:disabled{opacity:.55;cursor:default}"
+    },
+    {
+      "name": "Elapsed-time ruler",
+      "kind": "custom",
+      "description": "Thirty native rectangles communicate elapsed proportion. This documentation example illustrates 40% elapsed; it does not run a timer.",
+      "html": "<div class=\"ds-ruler\" role=\"img\" aria-label=\"Example: forty percent elapsed\"><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span class=\"ds-elapsed\"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>",
+      "css": ".ds-ruler{display:flex;gap:3px;height:4px;width:100%;max-width:432px;background:rgb(96% 95% 92%)}.ds-ruler span{flex:1;background:rgb(0 0 0 / .08)}.ds-ruler .ds-elapsed{background:rgb(71% 23% 7%)}"
+    },
+    {
+      "name": "Later note",
+      "kind": "input",
+      "refersTo": "note-editor",
+      "description": "Documentation equivalent of the native TextEditor surface; the application supplies autosave, count and storage-error feedback.",
+      "html": "<textarea class=\"ds-note\" aria-label=\"Note for later\" placeholder=\"After this session…\"></textarea>",
+      "css": ".ds-note{font:400 13px -apple-system,BlinkMacSystemFont,sans-serif;color:rgb(12% 13% 14%);caret-color:rgb(71% 23% 7%);background:rgb(255 255 255 / .24);border:1px solid rgb(12% 13% 14% / .12);border-radius:12px;padding:9px;min-height:100px}.ds-note::placeholder{color:rgb(37% 37% 36%)}.ds-note:focus{border-color:rgb(12% 13% 14% / .28);outline:2px solid rgb(71% 23% 7%);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Modernist notch companion",
+    "overview": "Broschy translates Ulm-era functional graphics into a native macOS utility: a calm opaque surface, strongly differentiated typography, precise dividers and orange actions. The panel keeps five existing tasks close at hand without becoming a full application window. Its English labels, native controls and camera-aware layout remain part of the product.\n\nThis system replaces the former translucent Liquid Glass treatment. Light and Dark appearances use the same layout and hierarchy; only the palette changes. Warm ivory and graphite provide stable contrast regardless of the desktop behind the panel.",
+    "keyCharacteristics": [
+      "Opaque, adaptive ivory and graphite surfaces.",
+      "Orange actions and selection, with separate green success and red failure states.",
+      "Left-aligned task content and a large tabular timer.",
+      "A 30-segment elapsed-time ruler and baseline tab navigation.",
+      "Native macOS interaction, accessibility and camera geometry."
+    ],
+    "rules": [
+      {
+        "name": "The Action Rule",
+        "body": "`action` and `on-action` form the primary button pair in both themes. `primary-light` and `primary-dark` are adaptive accents for progress, selected tabs, pins and activity; they are not interchangeable with the action fill.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** use the shared adaptive `Ink` tokens and opaque panel material.",
+      "**Do** preserve the measured camera gap, stable top edge and native focus behavior.",
+      "**Do** keep status labels, symbols, help text and keyboard access alongside color.",
+      "**Do** show actual native views in portfolio captures and label sample data honestly."
+    ],
+    "donts": [
+      "**Don't** restore decorative glass, stacked translucent cards or wallpaper-dependent contrast.",
+      "**Don't** map tab shortcuts to persistent IDs; map them to visible positions.",
+      "**Don't** treat a ready agent response as successful task completion.",
+      "**Don't** claim a screenshot verifies live integrations, physical-notch placement or multi-display behavior."
+    ]
+  }
+}

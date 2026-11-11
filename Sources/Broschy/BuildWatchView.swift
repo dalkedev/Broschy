@@ -91,7 +91,7 @@ struct BuildWatchView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Your builds, in one place.")
-                    .font(.system(size: 19, weight: .semibold, design: .rounded))
+                    .font(.system(size: 20, weight: .semibold)).tracking(-0.4)
                 Text("Follow GitHub Actions across repositories, branches, and pull requests. Open a repository to see its workflows.")
                     .font(.system(size: 11)).foregroundStyle(Ink.muted)
                     .fixedSize(horizontal: false, vertical: true)
